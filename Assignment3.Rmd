@@ -1,7 +1,7 @@
 ---
 title: "QRM II Graded Assignment (3)"
 subtitle: "Period 1, 2026"
-author: "Fill in your group number and names here"
+author: "Group 18"
 date:  "`r format(Sys.Date(), '%d-%m-%Y')`"
 output:
   pdf_document:
