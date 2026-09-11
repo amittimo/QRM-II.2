@@ -1,7 +1,10 @@
 ---
 title: "QRM II Graded Assignment (3)"
 subtitle: "Period 1, 2026"
-author: "Group 18"
+author: 
+- "Group 18"
+- "Timo Bekkema, Younes Maach, Edo Ho,"
+- "David van der Beek, Daan van der Ree"
 date:  "`r format(Sys.Date(), '%d-%m-%Y')`"
 output:
   pdf_document:
@@ -204,35 +207,52 @@ f. One executive at the studio wants to time the release of the movie to a speci
 *step a*
 
 ```{r}
-#WRITE YOUR CODE HERE
-
+# Frequentie tabel van de genre variabel
+genre_freq_table <- table(movies$genre)
+# Sorteer om de top 3 te vinden
+sort(genre_freq_table, decreasing = TRUE)[1:3]
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The three most occurring genres in the dataset are Drama, Comedy and Thriller.
 
 *step b*
 
 ```{r}
-#WRITE YOUR CODE HERE
-
+# Creëer een variabel die Drama, Comedy en Thriller laat zien en de rest bij elkaar voegt onder 'Other'
+movies$genre2 <- ifelse(movies$genre %in% c("Drama", "Comedy", "Thriller"),
+                        movies$genre,
+                        "Other")
+# Laat de tabel zien met de nieuwe variabele
+table(movies$genre2)
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The new variable 'genre2' retains Drama, Comedy and Thriller, while compacting all remaining genres into the 'Other' category.
 
 *step c*
 
 ```{r}
-#WRITE YOUR CODE HERE
+# Alle 0en als NA's weergeven
+movies$log_revenue <- ifelse(movies$revenue <= 0, NA, log(movies$revenue))
+movies$log_budget <- ifelse(movies$budget <= 0, NA, log(movies$budget))
+
+# Schat OLS model
+model_c <- lm(log_revenue ~ log_budget + factor(genre2) + release_year, data = movies)
+summary(model_c)
 
 ```
 
 **Your Answer:**
+Intercept(-24.6078): The intercept represents the expected log revenue of a baseline comedy movie released in the year 0, with a total production budget of $1. Because a budget of $1 and a release year of 0 are impossible, this coefficient has no meaningful economic interpretation. 
 
-Write your formulated response here.
+Log_budget (0.8633): Because both budget and revenue are log-transformed, this represents the elasticity. A 1% increase in the production budget leads to an approximate 0.86% increase in revenue, whilst holding other variables constant. 
+
+factor(genre2): The coefficients represent the expected difference in log revenue compared to the baseline "Comedy" category. For example, movies in the "Other" category have a coefficient of 0.2348, meaning roughly 23.5% higher expected revenue than comedies when holding budget and year constant. Drama and thriller have slightly lower (-9.6%) and higher (2.3%) revenues relative to comedy, respectively.
+
+Release_year (0.0137): Each successive year of release is associated with an approximate 1.37% increase in revenue, holding all other factors constant.
 
 *step d*
 
