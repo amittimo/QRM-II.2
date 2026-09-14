@@ -257,30 +257,60 @@ Release_year (0.0137): Each successive year of release is associated with an app
 *step d*
 
 ```{r}
-#WRITE YOUR CODE HERE
+# Runtime in model zetten om specifieke film te schatten
+model_d <- lm(log_revenue ~ log_budget + factor(genre2) + release_year + runtime, data = movies)
 
+# Dataframe maken voor 2026 drama movie (met budget van 20,000,000)
+new_movie <- data.frame(
+  log_budget = log(20000000),
+  genre2 = "Drama",
+  release_year = 2026,
+  runtime = 120
+)
+
+# Schat log omzet met 90% prediction interval
+pred_log <- predict(model_d, newdata = new_movie, interval = "prediction", level = 0.90)
+
+# Exponenteer om resultaten in USD te krijgen
+exp(pred_log)
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+After building a model that accounts for runtime, the predicted revenue for this 2026 Drama movie is around $49.3 million. The 90% prediction interval ranges from $4.26 million to $570.2 million, showing a high variance in movie revenues. 
+
+*Note: The question mentions a budget of "20,000,0000". Course coordinator Aglio confirmed that this is supposed to be $20 million.
 
 *step e*
 
 ```{r}
-#WRITE YOUR CODE HERE
+# Plot de residuals tegen fitted values om heteroskedasticity te checken
+plot(model_d$fitted.values, resid(model_d),
+     main = "Residuals vs. Fitted Values",
+     xlab = "Fitted Values",
+     ylab = "Residuals")
+abline(h = 0, col = "red")
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+By plotting the residuals against the fitted values (or other independent variables), we can visually inspect the spread. If the spread of the residuals widens or narrows significantly as fitted values increase (a funnel shape) this provides evidence of heteroskedasticity.
+
+This plot shows clear evidence of heteroskedasticity because the vertical variance of the residuals is not constant. The errors are highly dispersed for fitted values between 14 and 17 but cluster more tightly as fitted values approach 20, perfectly matching the 'funnel shape'.
 
 *step f*
 
 
 ```{r}
-#WRITE YOUR CODE HERE
+# Schat een nieuw model met release_month als een categorisch variabel
+model_f <- lm(log_revenue ~ log_budget + factor(genre2) + release_year + runtime + factor(release_month), data = movies)
+
+# Voer een F-test (anova) uit die de twee modellen vergelijkt
+anova(model_d, model_f)
 
 ```
 
+**Your Answer:**
+
+The F-test comparing the model with and without the release_month variable has a p-value of 0.3422. Because this p-value is greater than the standard 0.05 significance level, it proves that the release month does not have a statistical significant impact on a movie's revenue. Therefore, I would advise the studio that trying to time the release to a specific month to maximize revenue is not supported by this.
