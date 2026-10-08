@@ -95,7 +95,7 @@ summary(model4.1)
 
 **Your Answer:**
 
-The formula used, Revenuei = β0 + β1Budgeti + εi, so does the revenue move proportionally with the added budget, so is it profitable?
+The formula used, $\text{Revenue}_i = \beta_0 + \beta_1 \text{Budget}_i + \varepsilon_i$, so does the revenue move proportionally with the added budget, so is it profitable?
 
 *step b*
 
@@ -107,7 +107,7 @@ coef(model4.1)
 
 **Your Answer:**
 
-The answer gotten above is β1 = 2.83, meaning every dollar spent on the budget on average, results in 2.83 revenue. 
+The answer gotten above is $\beta_1 = 2.83$, meaning every dollar spent on the budget on average, results in 2.83 revenue. 
 
 *step c*
 
