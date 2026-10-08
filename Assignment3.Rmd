@@ -90,80 +90,96 @@ g. Who do you think is correct? Bob or Chantal? What would you advise the movie 
 *step a*
 
 ```{r}
-#WRITE YOUR CODE HERE
+#model genaamd "model4.1" is een lineair model, hoe beweegt omzet met gegeven budget. 
+model4.1 <- lm(revenue ~ budget, data = movies)
+summary(model4.1)
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The formula used, Revenuei = β0 + β1Budgeti + εi, so does the revenue move proportionally with the added budget, so is it profitable?
 
 *step b*
 
 ```{r}
-#WRITE YOUR CODE HERE
+#wat is de richtingscoefficient van het lineaire model(regressie model)
+coef(model4.1)
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The answer gotten above is β1 = 2.83, meaning every dollar spent on the budget on average, results in 2.83 revenue. 
 
 *step c*
 
 ```{r}
-#WRITE YOUR CODE HERE
+#geestimeerde helling b1 en SE vinden, na het vinden vna b1, heeft R 2 punten genomen, hoeveel blijven er over om te ondervinden of het klopt, test hoeveel SE meer dan 1 zijn
+b1 <- coef(summary(model4.1))["budget", "Estimate"]
+se1 <- coef(summary(model4.1))["budget", "Std. Error"]
+df1 <- df.residual(model4.1)
+t_stat <- (b1 - 1) / se1
+p_value <- 1- pt(t_stat, df1)
+print(p_value)/print(b1)
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+b1 = 2.83, se1 = 0.088, so t_stat = 20.8, the p value is basically 0, meaning that it is almost impossible to find 907 different movies juxtaposing Chantals claim. This wont always be true in the real world, but almost always. So, for this instance, with the given dataset, chantal is right.
 
 *step d*
 
 ```{r}
-#WRITE YOUR CODE HERE
-
+#een log = 0 kan niet, daarom die eruit filteren
+movies$log_revenue <- ifelse(movies$revenue == 0, NA, log(movies$revenue))
+movies$log_budget <- ifelse(movies$budget == 0, NA, log(movies$budget))
+model4.2 <- lm(log_revenue ~ log_budget, data = movies)
+summary(model4.2)
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+Movies with a revenue or budget of 0, are called NA before taking logs, because log(0) is NA, 629 movies have both a positive revenue and budget. 
 
 *step e*
 
 ```{r}
-#WRITE YOUR CODE HERE
-
+#wat is de rc van LM2
+coef(model4.2)
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+b1 = 0.885, meaning, a 1% increase in budget, results in a 0.885% increase in revenue, so there are signs of diminishing returns, as a log model with an elasticity below 1 is inelastic. 
 
 *step f*
 
 
 ```{r}
-#WRITE YOUR CODE HERE
+#using the anova formula (what google said) isnt optimal, because the variables are not the same. So the other easier option, using R^2
+summary(model4.1)$r.squared
+summary(model4.2)$r.squared
+
+
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+model4.1 has a R^2 of 0.533 and model4.2 a R^2 of 0.402, going off of this, model4.1 is better. However, this method is not bullet proof, because revenue is compared with log(revenue), and model4.1 has 909 movies, and model4.2 has 629. Both models take very large movies into account, however because model4.1 uses revenue and budget in dollars and model4.2 uses percentages, the large movies do not have so much impact in model4.2. So, taking everything into account model4.2 gives a more realistic outcome, that is the better fit. 
 
 *step g*
 
 ```{r}
-#WRITE YOUR CODE HERE
+#not needed
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+Only looking at model4.1, chantal would have been right in my eyes, but with the additional information of model4.2. I think Bob is more right, but not fully, but because of the budget's diminishing returns it stops being reasonable to invest somewhere. So my advice to the studio, be somewhere in the middle, do not take such extreme positions. If you have the money to invest in the budget, it is most likely profitable to do so.
 
 2
 
@@ -173,24 +189,32 @@ b. Using the insights from the scatterplot, your linear model, and your data, fi
 *step a*
 
 ```{r}
-#WRITE YOUR CODE HERE
+#Alpha = 0.5 omdat je het dan laat doorschijnen, zo zie je wanneer films dezelfde uitkomst hebben, se = FALSE, want R studio gaf een foutmelding. 
+ggplot(movies, aes(x = log_budget, y = log_revenue)) + geom_point(alpha = 0.5, color = "black") + 
+geom_smooth(method = "lm", se = FALSE, color = "red") + 
+labs( title = "Log Revenue vs Log Budget", x = "Log Budget", y = "Log Revenue") + 
+theme_minimal()
 
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The scatterplot is consistent with the previously found b1 value of 0.885, it shows a clear positive correlation between log budget and log revenue. Furthermore showing a wide range of scatter around the average line, thus showing budget cannot fully predict revenue. 
 
 *step b*
 
 ```{r}
-#WRITE YOUR CODE HERE
-
+#[] gebruik ik om iets te selecteren uit de dataset
+movies_complete <- movies[complete.cases(movies$log_revenue, movies$log_budget), ]
+movies_complete$predicted_log_revenue <- predict(model4.2, newdata = movies_complete)
+movies_complete$residual <- movies_complete$log_revenue - movies_complete$predicted_log_revenue
+top_movie <- movies_complete[which.max(movies_complete$residual), ]
+top_movie[, c("title", "log_revenue", "predicted_log_revenue", "residual", "budget", "revenue")]
 ```
 
 **Your Answer:**
 
-Write your formulated response here.
+The movie that has vastly overperformed percentage wise the most is Tarnation, using 218 dollars to make 1,162,014 dollars. Tarnation has a log revenue of 13.97, a predicted log revenue of 7.33,  and a residual of 6.63, the largest in the entire dataset. 
 
 # Week 5
 
@@ -236,8 +260,8 @@ The new variable 'genre2' retains Drama, Comedy and Thriller, while compacting a
 
 ```{r}
 # Alle 0en als NA's weergeven
-movies$log_revenue <- ifelse(movies$revenue <= 0, NA, log(movies$revenue))
-movies$log_budget <- ifelse(movies$budget <= 0, NA, log(movies$budget))
+movies$log_revenue <- ifelse(movies$revenue == 0, NA, log(movies$revenue))
+movies$log_budget <- ifelse(movies$budget == 0, NA, log(movies$budget))
 
 # Schat OLS model
 model_c <- lm(log_revenue ~ log_budget + factor(genre2) + release_year, data = movies)
