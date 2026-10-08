@@ -9,6 +9,7 @@ date:  "`r format(Sys.Date(), '%d-%m-%Y')`"
 output:
   pdf_document:
     number_sections: true
+    latex_engine: xelatex
   html_document:
     df_print: paged
 
@@ -26,10 +27,6 @@ format:
   html:
     code-overflow: wrap
 ---
-```{r package installations, include=FALSE}
-# Eenmalig downloaden. ALs je het al eens hebt gedownload, is dit niet nodig.
-install.packages(c("knitr", "rmarkdown", "tidyverse", "moments", "car"))
-```
 
 ```{r setup, include=FALSE}
 # Laad hier alle benodigde packages in voor het hele project, dit moet elke keer als je het bestand opnieuw opent.
@@ -41,7 +38,7 @@ library(car)
 movies <- read_tsv("data/movies5.tsv")
 ```
 
-```{r setup, include=FALSE}
+```{r setup2, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -127,7 +124,7 @@ print(p_value)/print(b1)
 
 **Your Answer:**
 
-b1 = 2.83, se1 = 0.088, so t_stat = 20.8, the p value is basically 0, meaning that it is almost impossible to find 907 different movies juxtaposing Chantals claim. This wont always be true in the real world, but almost always. So, for this instance, with the given dataset, chantal is right.
+b1 = 2.83, se1 = 0.088, so t_stat = 20.8, and the p-value is basically 0. This means the probability of observing a slope as extreme as 2.83, assuming the true slope is 1 or less, is practically zero, so we reject the null hypothesis and conclude that Chantal is right for this dataset.
 
 *step d*
 
@@ -208,7 +205,7 @@ The scatterplot is consistent with the previously found b1 value of 0.885, it sh
 movies_complete <- movies[complete.cases(movies$log_revenue, movies$log_budget), ]
 movies_complete$predicted_log_revenue <- predict(model4.2, newdata = movies_complete)
 movies_complete$residual <- movies_complete$log_revenue - movies_complete$predicted_log_revenue
-top_movie <- movies_complete[which.max(movies_complete$residual), ]
+top_movie <- movies_complete %>% slice_max(residual, n = 1)
 top_movie[, c("title", "log_revenue", "predicted_log_revenue", "residual", "budget", "revenue")]
 ```
 
@@ -274,7 +271,7 @@ Intercept(-24.6078): The intercept represents the expected log revenue of a base
 
 Log_budget (0.8633): Because both budget and revenue are log-transformed, this represents the elasticity. A 1% increase in the production budget leads to an approximate 0.86% increase in revenue, whilst holding other variables constant. 
 
-factor(genre2): The coefficients represent the expected difference in log revenue compared to the baseline "Comedy" category. For example, movies in the "Other" category have a coefficient of 0.2348, meaning roughly 23.5% higher expected revenue than comedies when holding budget and year constant. Drama and thriller have slightly lower (-9.6%) and higher (2.3%) revenues relative to comedy, respectively.
+factor(genre2): The coefficients represent the expected difference in log revenue compared to the baseline Comedy category. In a log-linear model, the percentage effect is calculated as 100 * (exp(coefficient) - 1). For example, movies in the "Other" category have a coefficient of 0.2348, meaning approximately 26.5% higher expected revenue than comedies when holding budget and year constant. Similarly, Drama and Thriller have approximately 9.1% lower and 2.3% higher revenues relative to comedy, respectively
 
 Release_year (0.0137): Each successive year of release is associated with an approximate 1.37% increase in revenue, holding all other factors constant.
 
